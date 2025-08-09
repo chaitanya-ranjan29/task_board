@@ -1,27 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { boards } from "@/lib/data";
+import { db } from "@/lib/data";
 import { withAuth } from "@/lib/withAuth";
 
 export const PUT = withAuth(async (userId, req: NextRequest) => {
   const id = req.url.split("/").pop()!;
   const { title } = await req.json();
 
-  const board = boards.find((b) => b.id === id && b.userId === userId);
+  // Check if board exists and belongs to the user
+  const userBoards = db.getBoardsByUser(userId);
+  const board = userBoards.find((b) => b.id === id);
+
   if (!board) {
     return NextResponse.json({ error: "Board not found" }, { status: 404 });
   }
 
-  board.title = title;
-  return NextResponse.json(board);
+  // Update board
+  db.updateBoard(id, title);
+
+  return NextResponse.json({ ...board, name: title });
 });
 
 export const DELETE = withAuth(async (userId, req: NextRequest) => {
   const id = req.url.split("/").pop()!;
-  const index = boards.findIndex((b) => b.id === id && b.userId === userId);
-  if (index === -1) {
+
+  // Check if board exists and belongs to the user
+  const userBoards = db.getBoardsByUser(userId);
+  const board = userBoards.find((b) => b.id === id);
+
+  if (!board) {
     return NextResponse.json({ error: "Board not found" }, { status: 404 });
   }
 
-  boards.splice(index, 1);
+  // Delete board (also removes its tasks)
+  db.deleteBoard(id);
+
   return NextResponse.json({ message: "Board deleted" });
 });

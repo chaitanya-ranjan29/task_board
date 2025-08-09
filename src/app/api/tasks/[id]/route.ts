@@ -1,31 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { tasks } from "@/lib/data";
+import { db } from "@/lib/data";
 import { withAuth } from "@/lib/withAuth";
 
 export const PUT = withAuth(async (userId, req: NextRequest) => {
   const id = req.url.split("/").pop()!;
   const { title, description, status, dueDate } = await req.json();
 
-  const task = tasks.find((t) => t.id === id);
+  // Find task and ensure it belongs to a board owned by the user
+  const task = db.getTask(id);
   if (!task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  if (title !== undefined) task.title = title;
-  if (description !== undefined) task.description = description;
-  if (status !== undefined) task.status = status;
-  if (dueDate !== undefined) task.dueDate = dueDate;
+  const board = db.getBoardsByUser(userId).find((b) => b.id === task.boardId);
+  if (!board) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
 
-  return NextResponse.json(task);
+  const updatedTask = db.updateTask(id, {
+    title,
+    description,
+    status,
+    dueDate,
+  });
+
+  return NextResponse.json(updatedTask);
 });
 
 export const DELETE = withAuth(async (userId, req: NextRequest) => {
   const id = req.url.split("/").pop()!;
-  const index = tasks.findIndex((t) => t.id === id);
-  if (index === -1) {
+
+  // Find task and ensure it belongs to a board owned by the user
+  const task = db.getTask(id);
+  if (!task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  tasks.splice(index, 1);
+  const board = db.getBoardsByUser(userId).find((b) => b.id === task.boardId);
+  if (!board) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
+
+  db.deleteTask(id);
+
   return NextResponse.json({ message: "Task deleted" });
 });
