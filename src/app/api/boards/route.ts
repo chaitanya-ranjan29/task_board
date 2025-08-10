@@ -17,7 +17,7 @@ export const POST = withAuth(async (userId, req: NextRequest) => {
     return NextResponse.json({ error: "Title is required" }, { status: 400 });
   }
 
-  const newBoard = { id: uuid(), userId, name: title };
+  const newBoard = { id: uuid(), userId, title: title };
   db.addBoard(newBoard);
 
   return NextResponse.json(newBoard, { status: 201 });

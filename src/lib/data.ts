@@ -10,7 +10,7 @@ export type User = {
 export type Board = {
   id: string;
   userId: string;
-  name: string;
+  title: string;
 };
 
 export type Task = {
@@ -80,11 +80,11 @@ export const db = {
     const data = readData();
     return data.boards.filter((b) => b.userId === userId);
   },
-  updateBoard: (boardId: string, name: string) => {
+  updateBoard: (boardId: string, title: string) => {
     const data = readData();
     const board = data.boards.find((b) => b.id === boardId);
     if (board) {
-      board.name = name;
+      board.title = title;
       writeData(data);
     }
   },
