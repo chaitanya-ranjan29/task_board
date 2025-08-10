@@ -179,19 +179,19 @@ export default function BoardTasksPage() {
         <input
           type="text"
           placeholder="Task title"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded dark:text-black"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
         <textarea
           placeholder="Description (optional)"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded dark:text-black"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
         <input
           type="date"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded  dark:text-black"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
         />

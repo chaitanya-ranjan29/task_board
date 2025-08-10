@@ -43,14 +43,14 @@ export default function RegisterPage() {
           <input
             type="text"
             placeholder="Username"
-            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-black"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-black"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

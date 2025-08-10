@@ -39,14 +39,14 @@ export default function LoginPage() {
         </h1>
         {error && <p className="text-red-500 mb-2">{error}</p>}
         <input
-          className="w-full p-2 border rounded mb-3"
+          className="w-full p-2 border rounded mb-3 dark:text-black"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
           type="password"
-          className="w-full p-2 border rounded mb-3"
+          className="w-full p-2 border rounded mb-3 dark:text-black"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

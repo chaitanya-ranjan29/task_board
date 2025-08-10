@@ -127,7 +127,7 @@ export default function BoardsPage() {
         <input
           type="text"
           placeholder="New board title"
-          className="flex-1 p-2 border rounded"
+          className="flex-1 p-2 border rounded dark:text-black"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
