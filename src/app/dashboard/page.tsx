@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Board } from "@/lib/data";
+import { useTheme } from "@/lib/useTheme";
 
 export default function DashboardPage() {
+  const { theme, toggleTheme } = useTheme();
   const [boards, setBoards] = useState<Board[]>([]);
   const [title, setTitle] = useState("");
   const router = useRouter();
@@ -68,7 +70,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Your Boards</h1>
@@ -87,7 +89,7 @@ export default function DashboardPage() {
           placeholder="New board title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="border p-2 rounded flex-1"
+          className="border border-gray-300 dark:border-gray-600 p-2 rounded flex-1 bg-white dark:bg-gray-800"
         />
         <button
           onClick={createBoard}
@@ -106,7 +108,7 @@ export default function DashboardPage() {
             <div
               key={board.id}
               onClick={() => router.push(`/boards/${board.id}`)}
-              className="p-4 border rounded shadow hover:bg-gray-50 cursor-pointer"
+              className="p-4 border border-gray-300 dark:border-gray-600 rounded shadow hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
             >
               {board.title}
             </div>

@@ -112,7 +112,7 @@ export default function BoardsPage() {
         </button>
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-3 py-1 rounded"
+          className="bg-gray-500 text-white px-3 py-1 rounded"
         >
           Logout
         </button>
