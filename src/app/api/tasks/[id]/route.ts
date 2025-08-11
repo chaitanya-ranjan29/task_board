@@ -6,18 +6,21 @@ export const PUT = withAuth(async (userId, req: NextRequest) => {
   const id = req.url.split("/").pop()!;
   const { title, description, status, dueDate } = await req.json();
 
-  // Find task and ensure it belongs to a board owned by the user
-  const task = db.getTask(id);
+  // Find task
+  const task = await db.getTask(id);
   if (!task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  const board = db.getBoardsByUser(userId).find((b) => b.id === task.boardId);
+  // Check if board belongs to the user
+  const boards = await db.getBoardsByUser(userId);
+  const board = boards.find((b) => b.id === task.boardId);
   if (!board) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
-  const updatedTask = db.updateTask(id, {
+  // Update task
+  const updatedTask = await db.updateTask(id, {
     title,
     description,
     status,
@@ -30,18 +33,20 @@ export const PUT = withAuth(async (userId, req: NextRequest) => {
 export const DELETE = withAuth(async (userId, req: NextRequest) => {
   const id = req.url.split("/").pop()!;
 
-  // Find task and ensure it belongs to a board owned by the user
-  const task = db.getTask(id);
+  // Find task
+  const task = await db.getTask(id);
   if (!task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  const board = db.getBoardsByUser(userId).find((b) => b.id === task.boardId);
+  // Check if board belongs to the user
+  const boards = await db.getBoardsByUser(userId);
+  const board = boards.find((b) => b.id === task.boardId);
   if (!board) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
-  db.deleteTask(id);
+  await db.deleteTask(id);
 
   return NextResponse.json({ message: "Task deleted" });
 });

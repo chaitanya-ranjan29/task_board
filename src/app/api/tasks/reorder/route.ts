@@ -10,24 +10,28 @@ export const PUT = withAuth(async (userId, req: NextRequest) => {
   }
 
   // Check board ownership
-  const board = db.getBoardsByUser(userId).find((b) => b.id === boardId);
+  const boards = await db.getBoardsByUser(userId);
+  const board = boards.find((b) => b.id === boardId);
   if (!board) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
-  const boardTasks = db.getAll().tasks.filter((t) => t.boardId === boardId);
+  // Get tasks for this board
+  const allTasks = await db.getAll();
+  const boardTasks = allTasks.tasks.filter((t) => t.boardId === boardId);
 
   if (boardTasks.length !== orderedTaskIds.length) {
     return NextResponse.json({ error: "Invalid task list" }, { status: 400 });
   }
 
-  // Reorder tasks
-  orderedTaskIds.forEach((taskId: string, index: number) => {
+  // Reorder tasks in Redis
+  for (let index = 0; index < orderedTaskIds.length; index++) {
+    const taskId = orderedTaskIds[index];
     const task = boardTasks.find((t) => t.id === taskId);
     if (task) {
-      db.updateTask(taskId, { order: index });
+      await db.updateTask(taskId, { order: index });
     }
-  });
+  }
 
   return NextResponse.json({ message: "Tasks reordered successfully" });
 });

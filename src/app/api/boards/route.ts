@@ -5,7 +5,7 @@ import { v4 as uuid } from "uuid";
 
 // GET: Fetch all boards for the logged-in user
 export const GET = withAuth(async (userId) => {
-  const userBoards = db.getBoardsByUser(userId);
+  const userBoards = await db.getBoardsByUser(userId); // now async
   return NextResponse.json(userBoards);
 });
 
@@ -17,8 +17,8 @@ export const POST = withAuth(async (userId, req: NextRequest) => {
     return NextResponse.json({ error: "Title is required" }, { status: 400 });
   }
 
-  const newBoard = { id: uuid(), userId, title: title };
-  db.addBoard(newBoard);
+  const newBoard = { id: uuid(), userId, title };
+  await db.addBoard(newBoard); // now async
 
   return NextResponse.json(newBoard, { status: 201 });
 });

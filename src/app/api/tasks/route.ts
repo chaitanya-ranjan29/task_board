@@ -13,14 +13,15 @@ export const GET = withAuth(async (userId, req: NextRequest) => {
   }
 
   // Check if board belongs to user
-  const board = db.getBoardsByUser(userId).find((b) => b.id === boardId);
+  const boards = await db.getBoardsByUser(userId);
+  const board = boards.find((b) => b.id === boardId);
   if (!board) {
     return NextResponse.json({ error: "Board not found" }, { status: 404 });
   }
 
-  const boardTasks = db
-    .getTasksByBoard(boardId)
-    .sort((a, b) => a.order - b.order);
+  const boardTasks = (await db.getTasksByBoard(boardId)).sort(
+    (a, b) => a.order - b.order
+  );
 
   return NextResponse.json(boardTasks);
 });
@@ -37,25 +38,27 @@ export const POST = withAuth(async (userId, req: NextRequest) => {
   }
 
   // Check if board belongs to user
-  const board = db.getBoardsByUser(userId).find((b) => b.id === boardId);
+  const boards = await db.getBoardsByUser(userId);
+  const board = boards.find((b) => b.id === boardId);
   if (!board) {
     return NextResponse.json({ error: "Board not found" }, { status: 404 });
   }
 
-  const order = db.getTasksByBoard(boardId).length;
+  const tasks = await db.getTasksByBoard(boardId);
+  const order = tasks.length;
 
   const newTask = {
     id: uuid(),
     boardId,
     title,
     description,
-    status: "pending",
+    status: "pending" as const,
     dueDate,
     createdAt: new Date().toISOString(),
     order,
   };
 
-  db.addTask(newTask);
+  await db.addTask(newTask);
 
   return NextResponse.json(newTask, { status: 201 });
 });

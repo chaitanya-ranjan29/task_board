@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { Redis } from "@upstash/redis";
 
 export type User = {
   id: string;
@@ -30,101 +29,108 @@ type DataType = {
   tasks: Task[];
 };
 
-// Path to data file
-const dataFilePath = path.join(process.cwd(), "data.json");
+// Create Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-// Ensure file exists with default structure
-function ensureDataFile() {
-  if (!fs.existsSync(dataFilePath)) {
+// Get entire dataset
+async function readData(): Promise<DataType> {
+  const data = await redis.get<DataType>("taskboard-data");
+  if (!data) {
     const initialData: DataType = { users: [], boards: [], tasks: [] };
-    fs.writeFileSync(dataFilePath, JSON.stringify(initialData, null, 2));
+    await redis.set("taskboard-data", initialData);
+    return initialData;
   }
+  return data;
 }
 
-// Read data from file
-function readData(): DataType {
-  ensureDataFile();
-  const raw = fs.readFileSync(dataFilePath, "utf-8");
-  return JSON.parse(raw) as DataType;
+// Save dataset
+async function writeData(data: DataType) {
+  await redis.set("taskboard-data", data);
 }
 
-// Write data to file
-function writeData(data: DataType) {
-  ensureDataFile();
-  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
-}
-
-// DB helper functions
 export const db = {
-  getAll: (): DataType => readData(),
+  getAll: async (): Promise<DataType> => readData(),
 
-  saveAll: (data: DataType) => writeData(data),
+  saveAll: async (data: DataType) => writeData(data),
 
   // Users
-  addUser: (user: User) => {
-    const data = readData();
+  addUser: async (user: User) => {
+    const data = await readData();
     data.users.push(user);
-    writeData(data);
+    await writeData(data);
   },
-  findUserByUsername: (username: string) => {
-    const data = readData();
+
+  findUserByUsername: async (username: string) => {
+    const data = await readData();
     return data.users.find((u) => u.username === username);
   },
-  findUserById: (id: string) => {
-    const data = readData();
+
+  findUserById: async (id: string) => {
+    const data = await readData();
     return data.users.find((u) => u.id === id);
   },
 
   // Boards
-  addBoard: (board: Board) => {
-    const data = readData();
+  addBoard: async (board: Board) => {
+    const data = await readData();
     data.boards.push(board);
-    writeData(data);
+    await writeData(data);
   },
-  getBoardsByUser: (userId: string) => {
-    const data = readData();
+
+  getBoardsByUser: async (userId: string) => {
+    const data = await readData();
     return data.boards.filter((b) => b.userId === userId);
   },
-  updateBoard: (boardId: string, title: string) => {
-    const data = readData();
+
+  updateBoard: async (boardId: string, title: string) => {
+    const data = await readData();
     const board = data.boards.find((b) => b.id === boardId);
     if (board) {
       board.title = title;
-      writeData(data);
+      await writeData(data);
     }
   },
-  deleteBoard: (boardId: string) => {
-    const data = readData();
+
+  deleteBoard: async (boardId: string) => {
+    const data = await readData();
     data.boards = data.boards.filter((b) => b.id !== boardId);
-    data.tasks = data.tasks.filter((t) => t.boardId !== boardId); // remove related tasks
-    writeData(data);
+    data.tasks = data.tasks.filter((t) => t.boardId !== boardId);
+    await writeData(data);
   },
 
   // Tasks
-  addTask: (task: Task) => {
-    const data = readData();
+  addTask: async (task: Task) => {
+    const data = await readData();
     data.tasks.push(task);
-    writeData(data);
+    await writeData(data);
   },
-  getTasksByBoard: (boardId: string) => {
-    const data = readData();
+
+  getTasksByBoard: async (boardId: string) => {
+    const data = await readData();
     return data.tasks.filter((t) => t.boardId === boardId);
   },
-  getTask: (taskId: string) => {
-    const data = readData();
+
+  getTask: async (taskId: string) => {
+    const data = await readData();
     return data.tasks.find((t) => t.id === taskId);
   },
-  updateTask: (taskId: string, updates: Partial<Task>) => {
-    const data = readData();
+
+  updateTask: async (taskId: string, updates: Partial<Task>) => {
+    const data = await readData();
     const index = data.tasks.findIndex((t) => t.id === taskId);
     if (index === -1) return undefined;
+
     data.tasks[index] = { ...data.tasks[index], ...updates };
-    writeData(data);
+    await writeData(data);
     return data.tasks[index];
   },
-  deleteTask: (taskId: string) => {
-    const data = readData();
+
+  deleteTask: async (taskId: string) => {
+    const data = await readData();
     data.tasks = data.tasks.filter((t) => t.id !== taskId);
-    writeData(data);
+    await writeData(data);
   },
 };

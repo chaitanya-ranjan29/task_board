@@ -7,7 +7,7 @@ export const PUT = withAuth(async (userId, req: NextRequest) => {
   const { title } = await req.json();
 
   // Check if board exists and belongs to the user
-  const userBoards = db.getBoardsByUser(userId);
+  const userBoards = await db.getBoardsByUser(userId);
   const board = userBoards.find((b) => b.id === id);
 
   if (!board) {
@@ -15,16 +15,16 @@ export const PUT = withAuth(async (userId, req: NextRequest) => {
   }
 
   // Update board
-  db.updateBoard(id, title);
+  await db.updateBoard(id, title);
 
-  return NextResponse.json({ ...board, name: title });
+  return NextResponse.json({ ...board, title });
 });
 
 export const DELETE = withAuth(async (userId, req: NextRequest) => {
   const id = req.url.split("/").pop()!;
 
   // Check if board exists and belongs to the user
-  const userBoards = db.getBoardsByUser(userId);
+  const userBoards = await db.getBoardsByUser(userId);
   const board = userBoards.find((b) => b.id === id);
 
   if (!board) {
@@ -32,7 +32,7 @@ export const DELETE = withAuth(async (userId, req: NextRequest) => {
   }
 
   // Delete board (also removes its tasks)
-  db.deleteBoard(id);
+  await db.deleteBoard(id);
 
   return NextResponse.json({ message: "Board deleted" });
 });
