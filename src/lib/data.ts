@@ -33,19 +33,24 @@ type DataType = {
 // Path to data file
 const dataFilePath = path.join(process.cwd(), "data.json");
 
-// Read data from file or initialize empty
-function readData(): DataType {
+// Ensure file exists with default structure
+function ensureDataFile() {
   if (!fs.existsSync(dataFilePath)) {
     const initialData: DataType = { users: [], boards: [], tasks: [] };
     fs.writeFileSync(dataFilePath, JSON.stringify(initialData, null, 2));
-    return initialData;
   }
+}
+
+// Read data from file
+function readData(): DataType {
+  ensureDataFile();
   const raw = fs.readFileSync(dataFilePath, "utf-8");
   return JSON.parse(raw) as DataType;
 }
 
 // Write data to file
 function writeData(data: DataType) {
+  ensureDataFile();
   fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
 }
 
@@ -105,22 +110,18 @@ export const db = {
     const data = readData();
     return data.tasks.filter((t) => t.boardId === boardId);
   },
-
   getTask: (taskId: string) => {
-    const data = db.getAll();
+    const data = readData();
     return data.tasks.find((t) => t.id === taskId);
   },
-
   updateTask: (taskId: string, updates: Partial<Task>) => {
-    const data = db.getAll();
+    const data = readData();
     const index = data.tasks.findIndex((t) => t.id === taskId);
     if (index === -1) return undefined;
-
     data.tasks[index] = { ...data.tasks[index], ...updates };
-    db.saveAll(data);
+    writeData(data);
     return data.tasks[index];
   },
-
   deleteTask: (taskId: string) => {
     const data = readData();
     data.tasks = data.tasks.filter((t) => t.id !== taskId);
