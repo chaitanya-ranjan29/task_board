@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Task } from "@/lib/data";
+import { Board, Task } from "@/lib/data";
 
 export default function BoardTasksPage() {
   const { id: boardId } = useParams();
@@ -39,7 +39,7 @@ export default function BoardTasksPage() {
         }
 
         if (Array.isArray(boardsData)) {
-          const currentBoard = boardsData.find((b: any) => b.id === boardId);
+          const currentBoard = boardsData.find((b: Board) => b.id === boardId);
           if (currentBoard) {
             setBoardTitle(currentBoard.title);
           }
